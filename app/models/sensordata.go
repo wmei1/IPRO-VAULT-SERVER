@@ -1,18 +1,52 @@
 package models
 
 import (
+    "errors"
+    "reflect"
+    "fmt"
     // "github.com/revel/revel"
 )
+func SetField(obj interface{}, name string, value interface{}) error {
+    structValue := reflect.ValueOf(obj).Elem()
+    structFieldValue := structValue.FieldByName(name)
+
+    if !structFieldValue.IsValid() {
+        return fmt.Errorf("No such field: %s in obj", name)
+    }
+
+    if !structFieldValue.CanSet() {
+        return fmt.Errorf("Cannot set %s field value", name)
+    }
+
+    structFieldType := structFieldValue.Type()
+    val := reflect.ValueOf(value)
+    if structFieldType != val.Type() {
+        return errors.New("Provided value type didn't match obj field type")
+    }
+
+    structFieldValue.Set(val)
+    return nil
+}
+
+func (s SensorData) FillStruct(m map[string]interface{}) error {
+    for k, v := range m {
+        err := SetField(s, k, v)
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
 
 type SensorData struct {
-    name                string  `json:"name"`
-    location            string  `json:"location"`
-    serial_number       int     `json:"serial_number"`
-    datetime            string  `json:"datetime"`
-    temperate           float64 `json:"temperature"`
-    pressure            float64 `json:"pressure"`
-    humidity            float64 `json:"humidity"`
-    water_level         float64 `json:"water_level"`
+    name                string
+    location            string
+    serial_number       int
+    datetime            string
+    temperate           float64
+    pressure            float64
+    humidity            float64
+    water_level         float64
 }
 
 // func (sensor_data *SensorData) Validate(v *revel.Validation) {

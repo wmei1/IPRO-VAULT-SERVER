@@ -4,9 +4,9 @@ import (
     "encoding/json"
     "io/ioutil"
     "fmt"
-    "log"
+    // "log"
     "github.com/revel/revel"
-    "github.com/skrzepto/IPRO-VAULT-SERVER/app/models"
+    // "github.com/skrzepto/IPRO-VAULT-SERVER/app/models"
     // "github.com/skrzepto/IPRO-VAULT-SERVER/app/routes"
 )
 
@@ -24,17 +24,23 @@ func (c App) Test() revel.Result {
 
 // Catch the json and store
 func (c App) NewData() revel.Result {
-    var s models.SensorData
     content, _ := ioutil.ReadAll(c.Request.Body)
-    err := json.Unmarshal([]byte(content), &s)
-    // fmt.Println(s.name) //sensor_data
-
-    // var content []string
-    // err := json.NewDecoder(c.Request.Body).Decode(&content)
-    if err != nil {
-        log.Fatal("JSON decode error: ", err)
+    var s map[string]interface{}
+    if err := json.Unmarshal(content, &s); err != nil {
+        panic(err)
     }
+    fmt.Printf("decoded to %#v\n", s)
+
     defer c.Request.Body.Close()
-    fmt.Println("%+v", s)
+
+    // result := &models.SensorData{}
+    // err := result.FillStruct(s)
+
+    // if err != nil {
+    //     fmt.Println(err)
+    // }
+
+    // fmt.Println(result)
+    // fmt.Println("%+v", s)
     return c.RenderText("%+v", s)
 }
